@@ -31,6 +31,7 @@ int total_loop_count = 0;
 int total_inst_count = 0;
 int inst_iterate_more_than[MAXN];
 int loop_iterate_more_than[MAXN];
+int stream_size_count[MAXN];
 void loop_count_in_all(int n) {
 	// a loop is identified if stream occurs more than once
 	// instruction count in loops that iterate more than n times
@@ -49,6 +50,7 @@ void loop_count_in_all(int n) {
 			if (iterated == 1) {
 				++total_loop_count;
 			}
+			if (cpt_stream[i].inst_cnt < MAXN) ++stream_size_count[cpt_stream[i].inst_cnt];
 			++iterated;
 			for (int j = 2; j < MAXN; j++) {
 				if (iterated >= j) {
@@ -68,12 +70,15 @@ void loop_count_in_all(int n) {
 		}
 	}
 
-	cout<<"Total inst count = "<<total_inst_count<<", total loop count = "<<total_loop_count<<"\n";
+	cout<<"Total inst count = "<<total_inst_count<<"\ntotal loop count = "<<total_loop_count<<"\n";
 	for (int i = 2; i < MAXN; i++) {
 		cout<<"inst count in loops with more than "<<i<<" iterations = "<<inst_iterate_more_than[i]<<"\n";
 	}
 	for (int i = 2; i < MAXN; i++) {
 		cout<<"loop count in loops with more than "<<i<<" iterations = "<<loop_iterate_more_than[i]<<"\n";
+	}
+	for (int i = 1; i <MAXN; i++) {
+		cout<<"loop stream size "<<i<<" has "<<stream_size_count[i]<<"\n";
 	}
 	return ;
 }
@@ -102,7 +107,7 @@ bool internal_unique(int n) {
 	}
 	return true;
 }
-
+int partial_stream_count[MAXN];
 void loop_with_internal_jump(int n) {
 	while (!internal_loop.empty()) internal_loop.pop();
 	int total_loop_count = 0;
@@ -117,6 +122,8 @@ void loop_with_internal_jump(int n) {
 				++iteration;
 				if (iteration > n - 1) {
 					// the first cold part is ignored here
+					if (cpt_stream[i].inst_cnt < MAXN)
+						++partial_stream_count[cpt_stream[i].inst_cnt];
 					total_inst_count_in_loops += cpt_stream[i].inst_cnt;
 				}
 			} else {
@@ -132,9 +139,12 @@ void loop_with_internal_jump(int n) {
 		}
 		internal_loop.push(cpt_stream[i]);
 	}
-	cout<<"Partial loop "<<n<<": total inst count = "<<total_inst_count_in_loops<<", total loop count = "<<total_loop_count<<"\n";
+	cout<<"Partial loop "<<n<<": total inst count = "<<total_inst_count_in_loops<<"\nPartial loop "<<n<<" total loop count = "<<total_loop_count<<"\n";
 	for (int i = 2; i < MAXN; i++) {
-		cout<<"loop count in partial loops with more than "<<i<<" iterations = "<<loop_iterate_more_than[i]<<"\n";
+		cout<<"loop count in partial loops "<<n<<" with more than "<<i<<" iterations = "<<loop_iterate_more_than[i]<<"\n";
+	}
+	for (int i = 1; i < MAXN; i++) {
+		cout<<"partial loop "<<n<<" size "<<i<<" has "<<partial_stream_count[i]<<"\n";
 	}
 }
 
