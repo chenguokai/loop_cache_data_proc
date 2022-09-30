@@ -94,3 +94,79 @@ print(partial_loop3_inst_cnt_in_loops_more_than_N)
 print(partial_loop2_loop_cnt_in_loops_more_than_N)
 #print(partial_loop3_loop_cnt_in_loops_more_than_N[2]['bwaves'])
 print(partial_loop3_loop_cnt_in_loops_more_than_N)
+
+
+import matplotlib.pylab as plt
+
+inst_in_loop_more_than2 = inst_cnt_in_loops_more_than_N[2].items()
+
+x,y = zip(*inst_in_loop_more_than2)
+
+plt.figure(0, figsize=(24,12)) # set figure size
+plt.bar(x,y, label='2')
+plt.xticks(rotation=-60)    # x axis rotation
+#plt.savefig('./inst_in_loop_more_than2iteration.jpg')
+
+
+inst_in_loop_more_than10 = inst_cnt_in_loops_more_than_N[10].items()
+x,y = zip(*inst_in_loop_more_than10)
+plt.bar(x,y, label = '10')
+
+inst_in_loop_more_than18 = inst_cnt_in_loops_more_than_N[18].items()
+x,y = zip(*inst_in_loop_more_than18)
+plt.bar(x,y,label='18')
+plt.legend()
+plt.savefig('./inst_in_loop_more_than2_10_18iteration.jpg')
+
+plt.figure(1, figsize=(24,12))
+plt.xticks(rotation=-60)    # x axis rotation
+for i in range(1,8):
+	stream_size = loop_stream_size[i].items()
+	x,y = zip(*stream_size)
+	plt.bar(x,y, label = str(i))
+
+plt.legend()
+plt.savefig('./stream_size_2_8.jpg')
+
+plt.figure(2, figsize=(24,12))
+plt.xticks(rotation=-60)
+
+for i in [2, 6, 12, 18]:
+	partial_2_inst = partial_loop2_inst_cnt_in_loops_more_than_N[i].items()
+	x,y = zip(*partial_2_inst)
+	plt.bar(x,y, label = str(i))
+
+plt.legend()
+plt.savefig('./partial_loop2_inst.jpg')
+
+plt.figure(3, figsize=(24,12))
+plt.xticks(rotation=-60)
+
+for i in [2, 6, 12, 18]:
+	partial_2_loop = partial_loop2_loop_cnt_in_loops_more_than_N[i].items()
+	x,y = zip(*partial_2_loop)
+	plt.bar(x,y, label = str(i))
+
+plt.legend()
+plt.savefig('./partial_loop2_loop.jpg')
+
+plt.figure(4, figsize=(24,12))
+plt.xticks(rotation=-60)
+
+for i in [2, 6, 12, 18]:
+	partial_3_inst = partial_loop3_inst_cnt_in_loops_more_than_N[i].items()
+	x,y = zip(*partial_3_inst)
+	plt.bar(x,y, label = str(i))
+plt.legend()
+plt.savefig('./partial_loop3_inst.jpg')
+
+plt.figure(5, figsize=(24,12))
+plt.xticks(rotation=-60)
+
+for i in [2, 6, 12, 18]:
+	partial_3_loop = partial_loop3_loop_cnt_in_loops_more_than_N[i].items()
+	x,y = zip(*partial_3_loop)
+	plt.bar(x,y, label = str(i))
+
+plt.legend()
+plt.savefig('./partial_loop3_loop.jpg')
