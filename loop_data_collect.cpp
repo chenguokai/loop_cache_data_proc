@@ -32,6 +32,45 @@ int total_inst_count = 0;
 int inst_iterate_more_than[MAXN];
 int loop_iterate_more_than[MAXN];
 int stream_size_count[MAXN];
+
+struct cache_info {
+	struct stream_info stream;
+	bool valid;
+	int last_access;
+};
+
+struct cache_info loop_cache[MAXN][MAXN];
+
+int cache_hit(int cache_size, struct stream_info stream) {
+	for (int i = 0; i < cache_size; i++) {
+		if (loop_cache[cache_size][i].stream == stream) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+void replace(int cache_size, struct stream_info stream, int access_time) {
+	int last_access = 0x3f3f3f3f;
+	int replace_pos;
+	for (int i = 0; i < cache_size; i++) {
+		if (!loop_cache[cache_size][i].valid) {
+			replace_pos = i;
+			break;
+		}
+		if (loop_cache[cache_size][i].last_access < last_access) {
+			replace_pos = i;
+			last_access = loop_cache[cache_size][i].last_access;
+		}
+	}
+	loop_cache[cache_size][replace_pos].valid = true;
+	loop_cache[cache_size][replace_pos].last_access = access_time;
+	loop_cache[cache_size][replace_pos].stream = stream;
+}
+
+int loop_hit_count[MAXN];
+int inst_hit_count[MAXN];
+
 void loop_count_in_all(int n) {
 	// a loop is identified if stream occurs more than once
 	// instruction count in loops that iterate more than n times
@@ -43,6 +82,15 @@ void loop_count_in_all(int n) {
 	prev.end_pc = 0;
 	prev.target_pc = 0;
 	prev.inst_cnt = 0;
+	for (int i = 0; i < MAXN; i++) {
+		for (int j = 0; j < MAXN; j++) {
+			loop_cache[i][j].valid = 0;
+		}
+	}
+	memset(loop_hit_count, 0, sizeof(loop_hit_count));
+	memset(inst_hit_count, 0, sizeof(inst_hit_count));
+	int hit_pos;
+
 	for (int i = 0; i < cpt_stream_size; i++) {
 		total_inst_count += cpt_stream[i].inst_cnt;
 		if (cpt_stream[i].end_pc == prev.end_pc && cpt_stream[i].target_pc == prev.target_pc) {
@@ -57,6 +105,20 @@ void loop_count_in_all(int n) {
 					inst_iterate_more_than[j] += cpt_stream[i].inst_cnt;
 				}
 			}
+
+			// check if any loop cache hit
+			for (int j = 1; j < MAXN; j++) {
+				if ((hit_pos = cache_hit(j, cpt_stream[i])) != -1) {
+					// cache hit, update access time
+					loop_cache[j][hit_pos].last_access = i;
+					++loop_hit_count[j];
+					inst_hit_count[j] += cpt_stream[i].inst_cnt;
+				} else {
+					// cache miss, replace loop cache
+					replace(j, cpt_stream[i], i);
+				}
+			}
+
 		} else {
 			// not a loop, update prev
 			if (iterated > 1) {
@@ -77,8 +139,12 @@ void loop_count_in_all(int n) {
 	for (int i = 2; i < MAXN; i++) {
 		cout<<"loop count in loops with more than "<<i<<" iterations = "<<loop_iterate_more_than[i]<<"\n";
 	}
-	for (int i = 1; i <MAXN; i++) {
+	for (int i = 1; i < MAXN; i++) {
 		cout<<"loop stream size "<<i<<" has "<<stream_size_count[i]<<"\n";
+	}
+	for (int i = 1; i < MAXN; i++) {
+		cout<<"loop cache size "<<i<<" hit "<<inst_hit_count[i]<<" inst\n";
+		cout<<"loop cache size "<<i<<" hit "<<loop_hit_count[i]<<" loop\n";
 	}
 	return ;
 }

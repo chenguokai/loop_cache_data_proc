@@ -17,6 +17,9 @@ partial_loop2_inst_cnt_in_loops_more_than_N = [dict() for x in range(20)]
 partial_loop3_inst_cnt_in_loops_more_than_N = [dict() for x in range(20)]
 partial_loop2_loop_cnt_in_loops_more_than_N = [dict() for x in range(20)]
 partial_loop3_loop_cnt_in_loops_more_than_N = [dict() for x in range(20)]
+loop_cache_hit_inst = [dict() for x in range(20)]
+loop_cache_hit_loop = [dict() for x in range(20)]
+
 
 for point in os.listdir(rootdir):
 	splited = point.rsplit('_', 2)
@@ -48,7 +51,9 @@ for point in os.listdir(rootdir):
 			partial_loop3_inst_cnt_in_loops_more_than_N[i][splited[0]] = 0.0
 			partial_loop2_loop_cnt_in_loops_more_than_N[i][splited[0]] = 0.0
 			partial_loop3_loop_cnt_in_loops_more_than_N[i][splited[0]] = 0.0
-	
+			loop_cache_hit_inst[i][splited[0]] = 0.0
+			loop_cache_hit_loop[i][splited[0]] = 0.0
+				
 	orig = total_weight[splited[0]] + local_weight
 	total_weight.update({splited[0]:orig})
 	
@@ -71,8 +76,13 @@ for point in os.listdir(rootdir):
 		elif line_split[0] == 'loop' and line_split[1] == 'count' and line_split[3] == 'partial' and line_split[5] == '3':
 			partial_loop3_loop_cnt_in_loops_more_than_N[int(line_split[-4])].update({splited[0]:partial_loop3_loop_cnt_in_loops_more_than_N[int(line_split[-4])][splited[0]] + local_weight * float(line_split[-1])})		
 		elif line_split[0] == 'partial' and line_split[1] == 'loop' and line_split[2] == '3':
-			 partial_loop3_inst_cnt_in_loops_more_than_N[int(line_split[-3])].update({splited[0]:partial_loop3_inst_cnt_in_loops_more_than_N[int(line_split[-3])][splited[0]] + local_weight * float(line_split[-1])})
-
+			partial_loop3_inst_cnt_in_loops_more_than_N[int(line_split[-3])].update({splited[0]:partial_loop3_inst_cnt_in_loops_more_than_N[int(line_split[-3])][splited[0]] + local_weight * float(line_split[-1])})
+		elif line_split[0] == 'loop' and line_split[1] == 'cache' and line_split[-1] == 'inst\n':
+			#print('debug')
+			loop_cache_hit_inst[int(line_split[3])].update({splited[0]:loop_cache_hit_inst[int(line_split[3])][splited[0]] + local_weight * float(line_split[-2])})
+		elif line_split[0] == 'loop' and line_split[1] == 'cache' and line_split[-1] == 'loop\n':
+			loop_cache_hit_loop[int(line_split[3])].update({splited[0]:loop_cache_hit_loop[int(line_split[3])][splited[0]] + local_weight * float(line_split[-2])})
+		# print(line_split)
 	# record as a point
 	point_set.add(splited[0])
 
@@ -170,3 +180,14 @@ for i in [2, 6, 12, 18]:
 
 plt.legend()
 plt.savefig('./partial_loop3_loop.jpg')
+
+plt.figure(6, figsize=(24,12))
+plt.xticks(rotation=-60)
+
+for i in [7,6,5,4,3,2,1]:
+	cache_size_inst = loop_cache_hit_inst[i].items()
+	x,y = zip(*cache_size_inst)
+	plt.bar(x,y, label = str(i))
+
+plt.legend()
+plt.savefig('./loop_cache_inst.jpg')
